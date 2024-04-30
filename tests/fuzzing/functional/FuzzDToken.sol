@@ -21,10 +21,10 @@ contract FuzzDToken is FuzzMarketManager {
     /// @custom:proeprty dtok-18 If amount * WAD / exchange_rate = 0 , the mint function should revert when trying to deposit to GaugePool.
     /// @custom:precondition amount bound between [1, uint256.max]
     function mint_should_actually_succeed(
-        address dtoken,
+        uint256 dtokenIndex,
         uint256 amount
     ) public {
-        _isSupportedDToken(dtoken);
+        address dtoken = _toSupportedDToken(dtokenIndex);
         require(gaugePool.startTime() < block.timestamp);
         _checkPriceFeed();
         (bool mintingPossible, ) = address(marketManager).call(
@@ -136,10 +136,10 @@ contract FuzzDToken is FuzzMarketManager {
     /// @custom:precondition user must not have a shortfall for respective token
     /// @custom:limitation TODO missing check for increase in _debtOf[account].principal and  _debtOf[account].accountExchangeRate
     function borrow_should_succeed_not_accruing_interest(
-        address dtoken,
+        uint256 dtokenIndex,
         uint256 amount
     ) public {
-        _isSupportedDToken(dtoken);
+        address dtoken = _toSupportedDToken(dtokenIndex);
         _checkPriceFeed();
         address underlying = DToken(dtoken).underlying();
         require(marketManager.isListed(dtoken));
@@ -202,10 +202,10 @@ contract FuzzDToken is FuzzMarketManager {
     /// @custom:precondition dtoken must be listed
     /// @custom:precondition user must not have a shortfall for respective token
     function borrow_should_succeed_accruing_interest(
-        address dtoken,
+        uint256 dtokenIndex,
         uint256 amount
     ) public {
-        _isSupportedDToken(dtoken);
+        address dtoken = _toSupportedDToken(dtokenIndex);
         _checkPriceFeed();
         address underlying = DToken(dtoken).underlying();
         require(marketManager.borrowPaused(dtoken) != 2);
@@ -290,10 +290,10 @@ contract FuzzDToken is FuzzMarketManager {
 
     /// @custom:precondition dtok-11 the repay function should fail with amount too large under correct preconditions
     function repay_should_fail_with_amount_too_large(
-        address dtoken,
+        uint256 dtokenIndex,
         uint256 amount
     ) public {
-        _isSupportedDToken(dtoken);
+        address dtoken = _toSupportedDToken(dtokenIndex);
         uint256 accountDebt = DToken(dtoken).debtBalanceCached(address(this));
         emit LogUint256("account debt", accountDebt);
         address underlying = DToken(dtoken).underlying();
@@ -349,10 +349,10 @@ contract FuzzDToken is FuzzMarketManager {
     /// @custom:property dtok-15 repay with amount!=0 should reduce underlying balance by provided amount
     /// @custom:property dtok-17 repay with interest accruing should make totalBorrows equivalent to totalBorrows - preTotalBorrows - amount - (|new_exchange_rate - old_exchange_rate|*accountDebt)
     function repay_within_account_debt_should_succeed(
-        address dtoken,
+        uint256 dtokenIndex,
         uint256 amount
     ) public {
-        _isSupportedDToken(dtoken);
+        address dtoken = _toSupportedDToken(dtokenIndex);
         address underlying = DToken(dtoken).underlying();
         uint256 accountDebt = DToken(dtoken).debtBalanceCached(address(this));
         amount = clampBetween(amount, 0, accountDebt);
@@ -494,9 +494,11 @@ contract FuzzDToken is FuzzMarketManager {
     // liquidateExact amount, with zero
     function liquidate_should_fail_with_exact_with_zero(
         address account,
-        address dtoken,
+        uint256 dtokenIndex,
         address collateralToken
     ) public {
+        address dtoken = _toSupportedDToken(dtokenIndex);
+
         uint256 amount = 0;
         // Structured for non exact liquidations, debt amount to liquidate = max
         uint256 collateralPostedFor = _collateralPostedFor(
@@ -542,9 +544,11 @@ contract FuzzDToken is FuzzMarketManager {
     function liquidate_should_succeed_with_exact(
         uint256 amount,
         address account,
-        address dtoken,
+        uint256 dtokenIndex,
         address collateralToken
     ) public {
+        address dtoken = _toSupportedDToken(dtokenIndex);
+
         // Structured for non exact liquidations, debt amount to liquidate = max
         uint256 collateralPostedFor = _collateralPostedFor(
             address(collateralToken)

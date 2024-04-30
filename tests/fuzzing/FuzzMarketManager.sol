@@ -1277,14 +1277,13 @@ contract FuzzMarketManager is FuzzLiquidations {
 
     function _checkLiquidatePreconditions(
         address account,
-        address dtoken,
+        address dToken,
         address collateralToken
     ) internal view {
-        _isSupportedDToken(dtoken);
         require(account != msg.sender);
-        require(marketManager.isListed(dtoken));
+        require(marketManager.isListed(dToken));
         require(
-            DToken(dtoken).marketManager() ==
+            DToken(dToken).marketManager() ==
                 DToken(collateralToken).marketManager()
         );
         require(IMToken(collateralToken).isCToken());
@@ -1296,7 +1295,7 @@ contract FuzzMarketManager is FuzzLiquidations {
             uint256 collatTokenPrice
         ) = marketManager.LiquidationStatusOf(
                 account,
-                dtoken,
+                dToken,
                 collateralToken
             );
         require(lfactor > 0);

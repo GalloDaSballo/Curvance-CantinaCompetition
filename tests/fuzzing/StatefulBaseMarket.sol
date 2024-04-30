@@ -201,7 +201,8 @@ contract StatefulBaseMarket is PropertiesAsserts, ErrorConstants {
         emit LogUint256("woowowo", 0);
         feeAccumulator = new FeeAccumulator(
             ICentralRegistry(address(centralRegistry)),
-            _USDC_ADDRESS);
+            _USDC_ADDRESS
+        );
         centralRegistry.setFeeAccumulator(address(feeAccumulator));
     }
 
@@ -613,8 +614,14 @@ contract StatefulBaseMarket is PropertiesAsserts, ErrorConstants {
         mockDaiFeed.setMockAnswer(1e8);
     }
 
-    function _isSupportedDToken(address dtoken) internal view {
-        require(dtoken == address(dUSDC) || dtoken == address(dDAI));
+    function _toSupportedDToken(
+        uint256 dtokenIndex
+    ) internal view returns (address) {
+        if (dtokenIndex % 2 == 0) {
+            return address(dUSDC);
+        }
+
+        return address(dDAI);
     }
 
     function _hasPosition(address mToken) internal view returns (bool) {

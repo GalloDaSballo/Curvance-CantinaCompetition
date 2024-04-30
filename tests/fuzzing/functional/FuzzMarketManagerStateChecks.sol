@@ -376,7 +376,6 @@ contract FuzzMarketManagerStateChecks is StatefulBaseMarket {
     /// @custom:precondition liquidityDeficit == 0
     /// @custom:precondition require that the mtoken has a position in the market
     function canBorrow_should_succeed(address mtoken, uint256 amount) public {
-        _isSupportedDToken(mtoken);
         require(marketManager.borrowPaused(mtoken) != 2);
         require(marketManager.isListed(mtoken));
         require(_hasPosition(mtoken));
